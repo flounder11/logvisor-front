@@ -3,7 +3,6 @@ import Layout from './layout/Layout'
 import AgentPage from './pages/AgentsPage'
 import DashboardPage from './pages/DashboardPage'
 import LiveTailPage from './pages/LiveTailPage'
-import LoginPage from './pages/LoginPage'
 import SearchPage from './pages/SearchPage'
 
 function App() {
@@ -17,10 +16,6 @@ function App() {
 					<Route
 						index
 						element={<DashboardPage />}
-					/>
-					<Route
-						path="login"
-						element={<LoginPage />}
 					/>
 					<Route
 						path="search"

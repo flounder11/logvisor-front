@@ -1,3 +1,4 @@
+import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 
@@ -6,7 +7,8 @@ export default function AppHeader() {
 
 	return (
 		<header className="flex justify-between max-w-7xl mx-auto mt-6">
-			<div className="flex gap-4">
+			<AnimatedThemeToggler className="ml-8" />
+			<div className="flex gap-4 mr-8">
 				<Button
 					onClick={() => navigate('/')}
 					size="lg"
@@ -36,12 +38,6 @@ export default function AppHeader() {
 					Agents page
 				</Button>
 			</div>
-			<Button
-				size="lg"
-				onClick={() => navigate('/login')}
-			>
-				Login
-			</Button>
 		</header>
 	)
 }
