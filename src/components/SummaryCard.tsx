@@ -9,20 +9,20 @@ import {
 type SummaryCardProps = {
 	title: string
 	description: string
-	placeholder?: string
+	data: number
 }
 
 export default function SummaryCard({
 	title,
 	description,
-	placeholder = '--'
+	data
 }: SummaryCardProps) {
 	return (
 		<Card className="border border-border/60 bg-card/95 shadow-sm">
 			<CardHeader className="space-y-2">
 				<CardDescription>{title}</CardDescription>
 				<CardTitle className="text-3xl font-semibold tracking-tight">
-					{placeholder}
+					{data}
 				</CardTitle>
 			</CardHeader>
 			<CardContent>

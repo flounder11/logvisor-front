@@ -1,0 +1,366 @@
+Какие данные нужны фронту с бека для Logovizor MVP
+
+2. Dashboard page
+
+2.1. Summary карточки
+GET /api/v1/dashboard/summary
+Нужно получать:
+- totalLogs
+- errors
+- warnings
+- activeAgents
+- triggeredAlerts
+
+2.2. График errors / warnings over time
+GET /api/v1/dashboard/timeseries
+Нужно получать массив items:
+- timestamp
+- errors
+- warnings
+
+2.3. Top hosts
+GET /api/v1/dashboard/top-hosts
+Нужно получать массив items:
+- host
+- count
+
+2.4. Top services
+GET /api/v1/dashboard/top-services
+Нужно получать массив items:
+- service
+- count
+
+2.5. Recent alerts на dashboard
+GET /api/v1/alerts/history
+Нужно получать:
+- items[]
+  - id
+  - ruleId
+  - ruleName
+  - triggeredAt
+  - message
+  - severity
+- total
+
+2.6. Для верхней инфы на dashboard дополнительно удобно иметь:
+- lastUpdatedAt
+- systemHealth или healthScore
+
+Если таких полей нет, фронт может временно собирать это сам из summary/timeseries.
+
+
+3. Search page
+
+GET /api/v1/logs/search?q=&host=&service=&level=&from=&to=&page=&size=
+
+Нужно отправлять query params:
+- q
+- host
+- service
+- level
+- from
+- to
+- page
+- size
+
+Нужно получать:
+- items[]
+  - id
+  - timestamp
+  - level
+  - message
+  - host
+  - service
+  - sourcePath
+  - metadata
+- total
+- page
+- size
+
+Для фильтров и summary на search page желательно ещё получать aggregations:
+- aggregations.levels
+- aggregations.hosts
+- aggregations.services
+
+Это нужно для:
+- количества найденных логов
+- списков host/service в select
+- быстрых breakdown по уровням
+
+Для правой панели подробностей о логе нужны поля:
+- id
+- timestamp
+- level
+- message
+- host
+- service
+- sourcePath
+- metadata
+
+Желательно, чтобы metadata могла включать:
+- traceId
+- requestId
+- region
+- env
+- source
+- любые доп. поля по сервису
+
+
+4. Live Tail page
+
+WS /api/v1/live/ws
+
+Нужно получать websocket-сообщения нескольких типов:
+
+4.1. log_event
+payload:
+- id
+- timestamp
+- level
+- message
+- host
+- service
+- sourcePath
+- metadata
+
+4.2. alert_triggered
+payload:
+- id
+- ruleId
+- ruleName
+- triggeredAt
+- message
+- severity
+
+4.3. agent_status
+payload:
+- id
+- name
+- hostName
+- status
+- lastSeenAt
+- bufferedCount
+
+Для live page ещё очень желательно иметь сервисные данные по соединению:
+- connection status: connecting | connected | disconnected
+- reconnect attempts
+- last event time
+- buffered events count
+- throughput или events per minute
+
+Если это не приходит отдельно от бека, часть можно считать на фронте локально.
+
+
+5. Alerts page
+
+5.1. Список правил
+GET /api/v1/alerts/rules
+Нужно получать массив rules:
+- id
+- name
+- enabled
+- query
+- conditionType
+- threshold
+- windowSec
+- cooldownSec
+
+5.2. Создание правила
+POST /api/v1/alerts/rules
+Нужно отправлять:
+- name
+- enabled
+- query
+- conditionType
+- threshold
+- windowSec
+- cooldownSec
+
+Нужно получать созданное правило:
+- id
+- name
+- enabled
+- query
+- conditionType
+- threshold
+- windowSec
+- cooldownSec
+
+5.3. Редактирование правила
+PUT /api/v1/alerts/rules/{id}
+Нужно отправлять изменяемые поля:
+- name
+- enabled
+- query
+- conditionType
+- threshold
+- windowSec
+- cooldownSec
+
+Нужно получать обновлённое правило.
+
+5.4. Удаление правила
+DELETE /api/v1/alerts/rules/{id}
+Нужно получать:
+- success / status
+или пустой ответ 204
+
+5.5. История срабатываний
+GET /api/v1/alerts/history
+Нужно получать:
+- items[]
+  - id
+  - ruleId
+  - ruleName
+  - triggeredAt
+  - message
+  - severity
+- total
+
+
+6. Agents page
+
+GET /api/v1/agents
+Нужно получать:
+- items[]
+  - id
+  - name
+  - hostName
+  - status
+  - lastSeenAt
+  - bufferedCount
+- total
+
+Это нужно для:
+- списка агентов
+- online/offline/degraded статуса
+- last seen
+- количества буферизированных событий
+
+
+7. Общие DTO, которые фронту нужны
+
+LogEvent:
+- id
+- timestamp
+- level
+- message
+- host
+- service
+- sourcePath
+- metadata
+
+SearchResponse:
+- items
+- total
+- page
+- size
+- aggregations.levels
+- aggregations.hosts
+- aggregations.services
+
+DashboardSummary:
+- totalLogs
+- errors
+- warnings
+- activeAgents
+- triggeredAlerts
+
+TimeseriesPoint:
+- timestamp
+- errors
+- warnings
+
+AlertRule:
+- id
+- name
+- enabled
+- query
+- conditionType
+- threshold
+- windowSec
+- cooldownSec
+
+AlertHistoryItem:
+- id
+- ruleId
+- ruleName
+- triggeredAt
+- message
+- severity
+
+AgentStatus:
+- id
+- name
+- hostName
+- status
+- lastSeenAt
+- bufferedCount
+
+ApiError:
+- message
+- code
+- details
+
+
+8. Что желательно иметь дополнительно, чтобы фронт был удобнее
+
+Для search page:
+- distinct hosts
+- distinct services
+- presets по time range
+
+Для live page:
+- heartbeat/health endpoint или ping
+- server time
+- max rows hint
+
+Для dashboard:
+- lastUpdatedAt
+- summary period, например "last 24h"
+
+Для alerts:
+- pagination в history
+- сортировка по triggeredAt
+
+Для agents:
+- фильтр по status
+- количество active / offline / degraded
+
+
+9. Минимум, без которого текущий UI не сможет нормально жить
+
+Обязательно:
+- login
+- me
+- dashboard/summary
+- dashboard/timeseries
+- dashboard/top-hosts
+- dashboard/top-services
+- logs/search
+- live/ws
+- alerts/rules
+- alerts/history
+- agents
+
+
+10. Самый важный итог
+
+Если кратко, фронту нужны 3 главные группы данных:
+
+1. Логи
+- поиск логов
+- отдельная запись лога
+- live stream логов
+
+2. Мониторинг
+- summary метрики
+- timeseries
+- top hosts / top services
+- статусы агентов
+
+3. Алерты
+- правила
+- история срабатываний
+
+Этого достаточно, чтобы подключить текущий UI и постепенно заменить все статические данные на реальные ответы бека.

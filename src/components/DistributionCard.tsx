@@ -6,10 +6,16 @@ import {
 	CardTitle
 } from '@/components/ui/card'
 
+type DistributionRow = {
+	host?: string
+	service?: string
+	count: number
+}
+
 type DistributionCardProps = {
 	title: string
 	description: string
-	rows: string[]
+	rows: DistributionRow[]
 }
 
 export default function DistributionCard({
@@ -26,12 +32,14 @@ export default function DistributionCard({
 			<CardContent className="space-y-4">
 				{rows.map((row, index) => (
 					<div
-						key={`${title}-${index}`}
+						key={index}
 						className="space-y-2"
 					>
 						<div className="flex items-center justify-between gap-3">
-							<p className="text-sm font-medium text-foreground">{row}</p>
-							<p className="text-sm text-muted-foreground">--</p>
+							<p className="text-sm font-medium text-foreground">
+								{row.host ?? row.service ?? '-'}
+							</p>
+							<p className="text-sm text-muted-foreground">{row.count}</p>
 						</div>
 						<div className="h-2 rounded-full bg-muted">
 							<div

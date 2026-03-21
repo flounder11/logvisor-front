@@ -1,46 +1,26 @@
 import DashboardChart from '@/components/DashboardChart'
 import DistributionCard from '@/components/DistributionCard'
+import ListSummary from '@/components/ListSummary'
 import PageInfo from '@/components/PageInfo'
 import RecentAlerts from '@/components/RecentAlerts'
-import SummaryCard from '@/components/SummaryCard'
+import { apiClient } from '@/shared/api/api-client'
+import { useEffect, useState } from 'react'
 
-const summaryCards = [
-	{
-		id: 'total-logs',
-		title: 'Total logs',
-		description: 'Слот под общее количество логов, сообщений или событий.'
-	},
-	{
-		id: 'errors',
-		title: 'Errors',
-		description:
-			'Можно вывести количество ошибок за период или active incidents.'
-	},
-	{
-		id: 'warnings',
-		title: 'Warnings',
-		description: 'Подходит для warning volume, anomaly score или health marker.'
-	},
-	{
-		id: 'agents',
-		title: 'Active agents',
-		description: 'Место под онлайн-агенты, ingest workers или collectors.'
-	},
-	{
-		id: 'alerts',
-		title: 'Triggered alerts',
-		description: 'Используй для recent alerts, escalations или pending review.'
-	}
-]
+type TopHostsItem = {
+	host: string
+	count: number
+}
+type TopHostsResponse = {
+	items: TopHostsItem[]
+}
 
-const topHostRows = ['host-name', 'host-name', 'host-name', 'host-name']
-
-const topServiceRows = [
-	'service-name',
-	'service-name',
-	'service-name',
-	'service-name'
-]
+type TopServiceItem = {
+	service: string
+	count: number
+}
+type TopServiceResponse = {
+	items: TopServiceItem[]
+}
 
 type InfoDataProps = {
 	title: string
@@ -67,33 +47,76 @@ export default function DashboardPage() {
 		subCardStats: '12:30',
 		subCardText: 'Последнее время обновления.'
 	}
+
+	const [topHosts, setTopHosts] = useState<TopHostsItem[]>([])
+	const [topServices, setTopServices] = useState<TopServiceItem[]>([])
+	const [loader, setLoader] = useState(false)
+	const [error, setError] = useState<string | null>(null)
+
+	useEffect(() => {
+		const fetchTopHosts = async () => {
+			try {
+				setLoader(true)
+				setError(null)
+
+				const dataHost = await apiClient.request<TopHostsResponse>({
+					method: 'GET',
+					path: 'dashboard/top-hosts'
+				})
+				setTopHosts(dataHost.items)
+			} catch (err) {
+				if (err instanceof Error) {
+					setError(err.message)
+				}
+			} finally {
+				setLoader(false)
+			}
+		}
+
+		const fetchTopServices = async () => {
+			try {
+				setLoader(true)
+				setError(null)
+
+				const dataServices = await apiClient.request<TopServiceResponse>({
+					method: 'GET',
+					path: 'dashboard/top-services'
+				})
+				setTopServices(dataServices.items)
+			} catch (err) {
+				if (err instanceof Error) {
+					setError(err.message)
+				}
+			} finally {
+				setLoader(false)
+			}
+		}
+
+		fetchTopServices()
+		fetchTopHosts()
+	}, [])
+
+	if (loader) return <div>Загрузка</div>
+	if (error) return <div>Ошибка</div>
+
 	return (
 		<section className="mx-auto mt-8 max-w-7xl px-4 pb-10 sm:px-6">
 			<div className="space-y-8">
 				<PageInfo data={infoData} />
 
-				<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-					{summaryCards.map(card => (
-						<SummaryCard
-							key={card.id}
-							title={card.title}
-							description={card.description}
-						/>
-					))}
-				</div>
-
+				<ListSummary />
 				<div className="grid gap-6 xl:grid-cols-4">
 					<DashboardChart />
 					<div className="space-y-6 xl:col-span-2 xl:col-start-3 xl:col-end-5">
 						<DistributionCard
 							title="Top hosts"
 							description="Каркас под список хостов, узлов или источников логов."
-							rows={topHostRows}
+							rows={topHosts}
 						/>
 						<DistributionCard
 							title="Top services"
 							description="Каркас под распределение по сервисам или приложениям."
-							rows={topServiceRows}
+							rows={topServices}
 						/>
 					</div>
 				</div>
