@@ -1,10 +1,4 @@
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle
-} from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 type DistributionRow = {
 	host?: string
@@ -14,20 +8,17 @@ type DistributionRow = {
 
 type DistributionCardProps = {
 	title: string
-	description: string
 	rows: DistributionRow[]
 }
 
 export default function DistributionCard({
 	title,
-	description,
 	rows
 }: DistributionCardProps) {
 	return (
 		<Card className="border border-border/60 bg-card/95 shadow-sm">
 			<CardHeader>
 				<CardTitle>{title}</CardTitle>
-				<CardDescription>{description}</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-4">
 				{rows.map((row, index) => (

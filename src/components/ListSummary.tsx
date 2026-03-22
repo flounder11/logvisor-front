@@ -46,27 +46,27 @@ export default function ListSummary() {
 			<SummaryCard
 				title="Total logs"
 				data={sumData?.totalLogs ?? 0}
-				description="Слот под общее количество логов, сообщений или событий."
+				description="Общее количество логов, сообщений или событий."
 			/>
 			<SummaryCard
 				title="Errors"
 				data={sumData?.errors ?? 0}
-				description="Можно вывести количество ошибок за период или active incidents."
+				description="Количество ошибок за период"
 			/>
 			<SummaryCard
 				title="Warnings"
 				data={sumData?.warnings ?? 0}
-				description="Подходит для warning volume, anomaly score или health marker."
+				description="Отчет warning volume"
 			/>
 			<SummaryCard
 				title="Active agents"
 				data={sumData?.hosts ?? 0}
-				description="Место под онлайн-агенты, ingest workers или collectors."
+				description="Онлайн-агенты, ingest workers"
 			/>
 			<SummaryCard
 				title="Triggered alerts"
 				data={sumData?.services ?? 0}
-				description="Используй для recent alerts, escalations или pending review."
+				description="Всего собранных алертов"
 			/>
 		</div>
 	)

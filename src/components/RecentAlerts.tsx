@@ -8,26 +8,26 @@ import {
 import { apiClient } from '@/shared/api/api-client'
 import { useEffect, useState } from 'react'
 
-const alertRows = [
-	{
-		id: 'alert-1',
-		level: 'ERROR' as AlertLevel,
-		title: 'Alert title',
-		description: 'Описание последнего срабатывания или текст события.'
-	},
-	{
-		id: 'alert-2',
-		level: 'WARN' as AlertLevel,
-		title: 'Alert title',
-		description: 'Здесь можно показать краткую историю trigger-ов.'
-	},
-	{
-		id: 'alert-3',
-		level: 'INFO' as AlertLevel,
-		title: 'Alert title',
-		description: 'Блок подходит под список recent alerts или incident feed.'
-	}
-]
+// const alertRows = [
+// 	{
+// 		id: 'alert-1',
+// 		level: 'ERROR' as AlertLevel,
+// 		title: 'Alert title',
+// 		description: 'Описание последнего срабатывания или текст события.'
+// 	},
+// 	{
+// 		id: 'alert-2',
+// 		level: 'WARN' as AlertLevel,
+// 		title: 'Alert title',
+// 		description: 'Здесь можно показать краткую историю trigger-ов.'
+// 	},
+// 	{
+// 		id: 'alert-3',
+// 		level: 'INFO' as AlertLevel,
+// 		title: 'Alert title',
+// 		description: 'Блок подходит под список recent alerts или incident feed.'
+// 	}
+// ]
 
 const levelTone: Record<AlertLevel, string> = {
 	ERROR: 'bg-red-500/12 text-red-700 ring-red-500/20',

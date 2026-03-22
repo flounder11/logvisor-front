@@ -8,11 +8,17 @@ import {
 
 import { FileText } from 'lucide-react'
 
-type LogLevel = 'ERROR' | 'WARN' | 'INFO'
+type LiveLevel = 'ERROR' | 'WARN' | 'INFO'
+
+const levelTone: Record<LiveLevel, string> = {
+	ERROR: 'bg-red-500/12 text-red-700 ring-red-500/20',
+	WARN: 'bg-amber-500/12 text-amber-700 ring-amber-500/20',
+	INFO: 'bg-sky-500/12 text-sky-700 ring-sky-500/20'
+}
 
 type SearchResultProps = {
 	id: string
-	level: LogLevel
+	level: LiveLevel
 	timestamp: string
 	host: string
 	service: string
@@ -47,7 +53,7 @@ export default function LogInfo({ selectedLog }: LogInfoProps) {
 		{ label: 'Level', value: selectedLog.level }
 	]
 
-	const tags = [selectedLog.note]
+	// const tags = [selectedLog.note]
 
 	return (
 		<Card className="min-h-[640px] border border-border/60 bg-card/95 shadow-sm">
@@ -63,7 +69,9 @@ export default function LogInfo({ selectedLog }: LogInfoProps) {
 			<CardContent className="space-y-5 pt-5">
 				<div className="rounded-3xl border border-border/60 bg-background/90 p-5">
 					<div className="flex flex-wrap items-center gap-2">
-						<span className="inline-flex items-center rounded-full bg-red-500/12 px-2.5 py-1 text-xs font-medium text-red-700 ring-1 ring-red-500/20">
+						<span
+							className={`inline-flex items-center rounded-full bg-red-500/12 px-2.5 py-1 text-xs font-medium text-red-700 ring-1 ring-red-500/20 ${levelTone[selectedLog.level]}`}
+						>
 							{selectedLog.level}
 						</span>
 						<span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground">

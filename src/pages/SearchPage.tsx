@@ -29,6 +29,25 @@ type SearchResuiltProps = {
 	note: string
 }
 
+function normalizeText(value: unknown): string {
+	return typeof value === 'string' ? value : ''
+}
+
+function normalizeSearchResult(item: Partial<SearchResuiltProps>): SearchResuiltProps {
+	return {
+		id: normalizeText(item.id) || crypto.randomUUID(),
+		level:
+			item.level === 'ERROR' || item.level === 'WARN' || item.level === 'INFO'
+				? item.level
+				: 'INFO',
+		timestamp: normalizeText(item.timestamp),
+		host: normalizeText(item.host),
+		service: normalizeText(item.service),
+		message: normalizeText(item.message),
+		note: normalizeText(item.note)
+	}
+}
+
 export default function SearchPage() {
 	const [search, setSearch] = useState<SearchResuiltProps[]>([])
 	const [loader, setLoader] = useState(false)
@@ -46,7 +65,7 @@ export default function SearchPage() {
 	const infoData: InfoDataProps = {
 		title: 'Поиск по логам с быстрым просмотром записи',
 		subTitle:
-			'Сверху фильтры, слева найденные логи, справа подробная информация о выбранной записи. Такой layout уже хорошо подходит под MVP search page из ТЗ.',
+			'Можешь найти нужный лог вписав любую информацию о нем, дальше посмотреть полную информацию в правой части экрана.',
 		iconTitle: 'Search',
 		mainCardTitle: 'Results overview',
 		mainCardStats: '128',
@@ -65,10 +84,15 @@ export default function SearchPage() {
 					method: 'GET',
 					path: 'logs/search'
 				})
-				setSearch(data.items)
+				const normalizedItems = Array.isArray(data.items)
+					? data.items.map((item: Partial<SearchResuiltProps>) =>
+							normalizeSearchResult(item)
+						)
+					: []
+				setSearch(normalizedItems)
 
-				if (data.items.length > 0) {
-					setSelectedLog(data.items[0])
+				if (normalizedItems.length > 0) {
+					setSelectedLog(normalizedItems[0])
 				}
 			} catch (err) {
 				if (err instanceof Error) {
@@ -83,18 +107,25 @@ export default function SearchPage() {
 	}, [])
 
 	const filteredLogs = useMemo(() => {
+		const normalizedQuery = query.toLowerCase()
+
 		return search
 			.filter(item => {
+				const message = normalizeText(item.message).toLowerCase()
+				const host = normalizeText(item.host).toLowerCase()
+				const service = normalizeText(item.service).toLowerCase()
+
 				const matchesQuery =
-					item.message.toLowerCase().includes(query.toLowerCase()) ||
-					item.host.toLowerCase().includes(query.toLowerCase()) ||
-					item.service.toLowerCase().includes(query.toLowerCase())
+					message.includes(normalizedQuery) ||
+					host.includes(normalizedQuery) ||
+					service.includes(normalizedQuery)
 
 				const matchesHost =
-					selectedHost === 'all-hosts' || item.host === selectedHost
+					selectedHost === 'all-hosts' || normalizeText(item.host) === selectedHost
 
 				const matchesService =
-					selectedService === 'all-services' || item.service === selectedService
+					selectedService === 'all-services' ||
+					normalizeText(item.service) === selectedService
 
 				const matchesLevel =
 					selectedLevel === 'all-levels' || item.level === selectedLevel

@@ -9,24 +9,6 @@ const bars = [
 	{ id: 'bar-6', label: '12:00', errorHeight: 42, warningHeight: 61 }
 ]
 
-const statBlocks = [
-	{
-		title: 'Peak load',
-		value: '--',
-		description: 'Место под максимальную нагрузку или всплеск по интервалу.'
-	},
-	{
-		title: 'Error volume',
-		value: '--',
-		description: 'Сюда можно вывести сумму ошибок за выбранный диапазон.'
-	},
-	{
-		title: 'Warning drift',
-		value: '--',
-		description: 'Подходит под тренд предупреждений или динамику деградаций.'
-	}
-]
-
 export default function DashboardChart() {
 	return (
 		<Card className="border border-border/60 bg-card/95 shadow-sm lg:col-span-2">
@@ -69,25 +51,6 @@ export default function DashboardChart() {
 							</div>
 						))}
 					</div>
-				</div>
-
-				<div className="grid gap-3 sm:grid-cols-3">
-					{statBlocks.map(block => (
-						<div
-							key={block.title}
-							className="rounded-2xl border border-border/60 bg-background/80 p-4"
-						>
-							<p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-								{block.title}
-							</p>
-							<p className="mt-2 text-2xl font-semibold text-foreground">
-								{block.value}
-							</p>
-							<p className="mt-1 text-sm leading-6 text-muted-foreground">
-								{block.description}
-							</p>
-						</div>
-					))}
 				</div>
 			</CardContent>
 		</Card>

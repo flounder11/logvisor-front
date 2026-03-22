@@ -106,12 +106,10 @@ export default function DashboardPage() {
 					<div className="space-y-6 xl:col-span-2 xl:col-start-3 xl:col-end-5">
 						<DistributionCard
 							title="Top hosts"
-							description="Каркас под список хостов, узлов или источников логов."
 							rows={topHosts}
 						/>
 						<DistributionCard
 							title="Top services"
-							description="Каркас под распределение по сервисам или приложениям."
 							rows={topServices}
 						/>
 					</div>

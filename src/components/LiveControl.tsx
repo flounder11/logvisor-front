@@ -1,15 +1,13 @@
+import type { LiveConnectionState, LiveLevel } from '@/shared/types/live'
+import { Button } from '@/components/ui/button'
 import {
 	Card,
 	CardDescription,
 	CardHeader,
 	CardTitle
 } from '@/components/ui/card'
-
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Filter, Search } from 'lucide-react'
-import { Button } from './ui/button'
-
 import {
 	Select,
 	SelectContent,
@@ -18,82 +16,66 @@ import {
 	SelectTrigger,
 	SelectValue
 } from '@/components/ui/select'
-import { useMemo } from 'react'
+import { Switch } from '@/components/ui/switch'
+import { Filter, Pause, Play } from 'lucide-react'
 
-type LogLevel = 'ERROR' | 'WARN' | 'INFO'
-
-type SearchResultProps = {
-	id: string
-	level: LogLevel
-	host: string
-	service: string
-}
-
-// type AllLogsProps = {
-// 	filterSearch: SearchResultProps[]
-// }
-
-type FiltersProps = {
-	filterSearch: SearchResultProps[]
+type LiveControlProps = {
 	query: string
 	onQueryChange: (value: string) => void
 	selectedHost: string
 	onHostChange: (value: string) => void
-	selectedService: string
-	onServiceChange: (value: string) => void
 	selectedLevel: string
 	onLevelChange: (value: string) => void
-	onReset: () => void
+	hostOptions: string[]
+	levelOptions: LiveLevel[]
+	autoScroll: boolean
+	onAutoScrollChange: (value: boolean) => void
+	isPaused: boolean
+	onPause: () => void
+	onResume: () => void
+	connectionState: LiveConnectionState
 }
 
-export default function Filters({
-	filterSearch,
+export default function LiveControl({
 	query,
 	onQueryChange,
 	selectedHost,
 	onHostChange,
-	selectedService,
-	onServiceChange,
 	selectedLevel,
 	onLevelChange,
-	onReset
-}: FiltersProps) {
-	const uniqueHosts = useMemo(() => {
-		return [...new Set(filterSearch.map(item => item.host))]
-	}, [filterSearch])
-
-	const uniqueLevels = useMemo(() => {
-		return [...new Set(filterSearch.map(item => item.level))]
-	}, [filterSearch])
-
-	const uniqueServices = useMemo(() => {
-		return [...new Set(filterSearch.map(item => item.service))]
-	}, [filterSearch])
-
+	hostOptions,
+	levelOptions,
+	autoScroll,
+	onAutoScrollChange,
+	isPaused,
+	onPause,
+	onResume,
+	connectionState
+}: LiveControlProps) {
 	return (
 		<Card className="border border-border/60 bg-card/95 shadow-sm">
 			<CardHeader className="gap-5">
 				<div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 					<div className="space-y-1">
-						<CardTitle className="text-xl">Filters</CardTitle>
+						<CardTitle className="text-xl">Live controls</CardTitle>
 						<CardDescription>
-							Минимальный и понятный бар для запроса, host, service и уровня
-							лога.
+							Панель управления для client-side filters и состояния live
+							подключения.
 						</CardDescription>
 					</div>
 					<div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground">
 						<Filter className="size-3.5" />
-						Search controls
+						{connectionState}
 					</div>
 				</div>
 
-				<div className="grid gap-4 xl:grid-cols-[minmax(0,1.6fr)_repeat(3,minmax(0,0.7fr))_auto] items-center">
+				<div className="grid items-center gap-4 xl:grid-cols-[minmax(0,1.5fr)_repeat(2,minmax(0,0.7fr))_auto_auto]">
 					<Field>
 						<Input
 							className="h-11 bg-background/80"
-							placeholder="Search in message, trace id, host, service..."
+							placeholder="Filter stream by message, trace id or service..."
 							value={query}
-							onChange={e => onQueryChange(e.target.value)}
+							onChange={event => onQueryChange(event.target.value)}
 						/>
 					</Field>
 
@@ -108,36 +90,12 @@ export default function Filters({
 							<SelectContent position="popper">
 								<SelectGroup>
 									<SelectItem value="all-hosts">All hosts</SelectItem>
-									{uniqueHosts.map(host => (
+									{hostOptions.map(host => (
 										<SelectItem
 											key={host}
 											value={host}
 										>
 											{host}
-										</SelectItem>
-									))}
-								</SelectGroup>
-							</SelectContent>
-						</Select>
-					</Field>
-
-					<Field>
-						<Select
-							value={selectedService}
-							onValueChange={onServiceChange}
-						>
-							<SelectTrigger className="h-11 w-full bg-background/80">
-								<SelectValue placeholder="Service" />
-							</SelectTrigger>
-							<SelectContent position="popper">
-								<SelectGroup>
-									<SelectItem value="all-services">All services</SelectItem>
-									{uniqueServices.map(service => (
-										<SelectItem
-											key={service}
-											value={service}
-										>
-											{service}
 										</SelectItem>
 									))}
 								</SelectGroup>
@@ -156,7 +114,7 @@ export default function Filters({
 							<SelectContent position="popper">
 								<SelectGroup>
 									<SelectItem value="all-levels">All levels</SelectItem>
-									{uniqueLevels.map(level => (
+									{levelOptions.map(level => (
 										<SelectItem
 											key={level}
 											value={level}
@@ -169,20 +127,39 @@ export default function Filters({
 						</Select>
 					</Field>
 
+					<div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/80 px-4 py-3">
+						<Switch
+							checked={autoScroll}
+							aria-label="Auto scroll"
+							onCheckedChange={checked =>
+								onAutoScrollChange(checked === true)
+							}
+						/>
+						<div className="space-y-0.5">
+							<p className="text-sm font-medium text-foreground">Auto-scroll</p>
+							<p className="text-xs text-muted-foreground">
+								Автовыбор последнего события
+							</p>
+						</div>
+					</div>
+
 					<div className="flex flex-wrap gap-3">
 						<Button
 							size="lg"
-							className="min-w-28"
+							onClick={onPause}
+							disabled={isPaused}
 						>
-							<Search className="size-4" />
-							Search
+							<Pause className="size-4" />
+							Pause
 						</Button>
 						<Button
-							variant="secondary"
 							size="lg"
-							onClick={onReset}
+							variant="outline"
+							onClick={onResume}
+							disabled={!isPaused}
 						>
-							Reset
+							<Play className="size-4" />
+							Resume
 						</Button>
 					</div>
 				</div>
