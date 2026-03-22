@@ -18,8 +18,34 @@ import {
 	SelectTrigger,
 	SelectValue
 } from '@/components/ui/select'
+import { useMemo } from 'react'
 
-export default function Filters() {
+type LogLevel = 'ERROR' | 'WARN' | 'INFO'
+
+type SearchResultProps = {
+	id: string
+	level: LogLevel
+	host: string
+	service: string
+}
+
+type AllLogsProps = {
+	filterSearch: SearchResultProps[]
+}
+
+export default function Filters({ filterSearch }: AllLogsProps) {
+	const uniqueHosts = useMemo(() => {
+		return [...new Set(filterSearch.map(item => item.host))]
+	}, [filterSearch])
+
+	const uniqueLevels = useMemo(() => {
+		return [...new Set(filterSearch.map(item => item.level))]
+	}, [filterSearch])
+
+	const uniqueServices = useMemo(() => {
+		return [...new Set(filterSearch.map(item => item.service))]
+	}, [filterSearch])
+
 	return (
 		<Card className="border border-border/60 bg-card/95 shadow-sm">
 			<CardHeader className="gap-5">
@@ -53,9 +79,14 @@ export default function Filters() {
 							<SelectContent position="popper">
 								<SelectGroup>
 									<SelectItem value="all-hosts">All hosts</SelectItem>
-									<SelectItem value="srv-app-01">srv-app-01</SelectItem>
-									<SelectItem value="srv-worker-02">srv-worker-02</SelectItem>
-									<SelectItem value="srv-db-01">srv-db-01</SelectItem>
+									{uniqueHosts.map(host => (
+										<SelectItem
+											key={host}
+											value={host}
+										>
+											{host}
+										</SelectItem>
+									))}
 								</SelectGroup>
 							</SelectContent>
 						</Select>
@@ -69,9 +100,14 @@ export default function Filters() {
 							<SelectContent position="popper">
 								<SelectGroup>
 									<SelectItem value="all-services">All services</SelectItem>
-									<SelectItem value="api-gateway">api-gateway</SelectItem>
-									<SelectItem value="worker">worker</SelectItem>
-									<SelectItem value="postgres">postgres</SelectItem>
+									{uniqueServices.map(service => (
+										<SelectItem
+											key={service}
+											value={service}
+										>
+											{service}
+										</SelectItem>
+									))}
 								</SelectGroup>
 							</SelectContent>
 						</Select>
@@ -85,9 +121,14 @@ export default function Filters() {
 							<SelectContent position="popper">
 								<SelectGroup>
 									<SelectItem value="all-levels">All levels</SelectItem>
-									<SelectItem value="error">ERROR</SelectItem>
-									<SelectItem value="warn">WARN</SelectItem>
-									<SelectItem value="info">INFO</SelectItem>
+									{uniqueLevels.map(level => (
+										<SelectItem
+											key={level}
+											value={level}
+										>
+											{level}
+										</SelectItem>
+									))}
 								</SelectGroup>
 							</SelectContent>
 						</Select>

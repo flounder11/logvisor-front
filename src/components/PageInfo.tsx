@@ -1,18 +1,49 @@
+import { apiClient } from '@/shared/api/api-client'
 import { Activity } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 type PageInfoProps = {
 	title: string
 	subTitle: string
 	iconTitle: string
 	mainCardTitle: string
-	mainCardStats: string
-	mainCardText: string
 	subCardTitle: string
 	subCardStats: string
 	subCardText: string
 }
 
+type HealthCheck = {
+	status: string
+}
+
 export default function PageInfo({ data }: { data: PageInfoProps }) {
+	const [status, setStatus] = useState<HealthCheck>()
+	const [loader, setLoader] = useState(false)
+	const [error, setError] = useState(null)
+
+	useEffect(() => {
+		const fetchHealthCheck = async () => {
+			try {
+				setLoader(true)
+				setError(null)
+				const data = await apiClient.request<HealthCheck>({
+					method: 'GET',
+					path: 'health'
+				})
+				setStatus(data)
+			} catch (err) {
+				if (err instanceof Error) {
+					console.log(err.message)
+				}
+			} finally {
+				setLoader(false)
+			}
+		}
+		fetchHealthCheck()
+	}, [])
+
+	if (loader) return <div>loading</div>
+	if (error) return <div>error</div>
 	return (
 		<div>
 			<div className="overflow-hidden rounded-[2rem] border border-border/60 bg-card/95 p-6 shadow-sm sm:p-8">
@@ -38,10 +69,10 @@ export default function PageInfo({ data }: { data: PageInfoProps }) {
 								{data.mainCardTitle}
 							</p>
 							<p className="mt-3 text-3xl font-semibold text-foreground">
-								{data.mainCardStats}
+								{status?.status}
 							</p>
 							<p className="mt-1 text-sm leading-6 text-muted-foreground">
-								{data.mainCardText}
+								{status?.status === 'UP' ? 'Стабильное состояние' : 'Все упало'}
 							</p>
 						</div>
 

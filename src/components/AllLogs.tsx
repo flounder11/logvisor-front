@@ -16,6 +16,20 @@ const levelTone: Record<LogLevel, string> = {
 	INFO: 'bg-sky-500/12 text-sky-700 ring-sky-500/20'
 }
 
+type SearchResultProps = {
+	id: string
+	level: LogLevel
+	time: string
+	host: string
+	service: string
+	message: string
+	note: string
+}
+
+type AllLogsProps = {
+	search: SearchResultProps[]
+}
+
 const searchResults = [
 	{
 		id: 'log-1',
@@ -43,28 +57,10 @@ const searchResults = [
 		service: 'auth-service',
 		message: 'Session token refreshed successfully for admin account',
 		note: 'Нейтральное событие'
-	},
-	{
-		id: 'log-4',
-		level: 'ERROR' as LogLevel,
-		time: '09:10:03',
-		host: 'srv-db-01',
-		service: 'postgres',
-		message: 'Connection pool exhausted during spike on reporting query',
-		note: 'Критичная запись'
-	},
-	{
-		id: 'log-5',
-		level: 'WARN' as LogLevel,
-		time: '09:07:29',
-		host: 'srv-cache-01',
-		service: 'redis',
-		message: 'Memory usage reached soft limit, eviction may start soon',
-		note: 'Инфо для расследования'
 	}
 ]
 
-export default function AllLogs() {
+export default function AllLogs({ search }: AllLogsProps) {
 	return (
 		<Card className="min-h-[640px] border border-border/60 bg-card/95 shadow-sm">
 			<CardHeader className="gap-4 border-b border-border/60 pb-5">
@@ -74,15 +70,15 @@ export default function AllLogs() {
 						<CardDescription>Все полученные логи</CardDescription>
 					</div>
 					<div className="rounded-2xl border border-border/60 bg-background/80 px-3 py-2 text-xs text-muted-foreground">
-						Showing 5 of 128
+						Find {search.length} logs
 					</div>
 				</div>
 			</CardHeader>
 
 			<CardContent className="space-y-3 pt-5">
-				{searchResults.map((item, index) => (
+				{search.map((item, index) => (
 					<div
-						key={item.id}
+						key={`${item.host}-${item.service}-${item.time}-${index}`}
 						className={`rounded-2xl border p-4 transition-colors ${
 							index === 0
 								? 'border-foreground/15 bg-muted/50 shadow-sm'

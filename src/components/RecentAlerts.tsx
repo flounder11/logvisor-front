@@ -5,6 +5,8 @@ import {
 	CardHeader,
 	CardTitle
 } from '@/components/ui/card'
+import { apiClient } from '@/shared/api/api-client'
+import { useEffect, useState } from 'react'
 
 const alertRows = [
 	{
@@ -35,14 +37,50 @@ const levelTone: Record<AlertLevel, string> = {
 
 type AlertLevel = 'ERROR' | 'WARN' | 'INFO'
 
+type AlertResponse = {
+	id: number
+	query: string
+	name: string
+	level: AlertLevel
+	createdAt: string
+}
+
 export default function RecentAlerts() {
+	const [alerts, setAlerts] = useState<AlertResponse[]>([])
+	const [loader, setLoader] = useState(false)
+	const [error, setError] = useState<string | null>(null)
+
+	useEffect(() => {
+		const fetchAlertsHistory = async () => {
+			try {
+				setLoader(true)
+				setError(null)
+				const data = await apiClient.request<AlertResponse[]>({
+					method: 'GET',
+					path: 'alerts/rules'
+				})
+				setAlerts(data)
+			} catch (err) {
+				if (err instanceof Error) {
+					setError(err.message)
+				}
+			} finally {
+				setLoader(false)
+			}
+		}
+
+		fetchAlertsHistory()
+	}, [])
+
+	if (loader) return <div>загрузка</div>
+	if (error) return <div>ошибка</div>
 	return (
 		<Card className="border border-border/60 bg-card/95 shadow-sm">
 			<CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 				<div className="space-y-1">
 					<CardTitle>Recent alerts</CardTitle>
 					<CardDescription>
-						Скелет под историю алертов, инцидентов или последних событий.
+						История алертов, инцидентов или последних событий.
 					</CardDescription>
 				</div>
 				<div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground">
@@ -52,7 +90,7 @@ export default function RecentAlerts() {
 
 			<CardContent className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
 				<div className="space-y-4">
-					{alertRows.map(alert => (
+					{alerts.map(alert => (
 						<div
 							key={alert.id}
 							className="flex items-start justify-between gap-4 rounded-2xl border border-border/60 bg-background/80 p-4"
@@ -65,14 +103,16 @@ export default function RecentAlerts() {
 										{alert.level}
 									</span>
 									<p className="text-sm font-semibold text-foreground">
-										{alert.title}
+										{alert.query}
 									</p>
 								</div>
 								<p className="text-sm leading-6 text-muted-foreground">
-									{alert.description}
+									{alert.name}
 								</p>
 							</div>
-							<p className="shrink-0 text-xs text-muted-foreground">--:--</p>
+							<p className="shrink-0 text-xs text-muted-foreground">
+								{alert.createdAt}
+							</p>
 						</div>
 					))}
 				</div>

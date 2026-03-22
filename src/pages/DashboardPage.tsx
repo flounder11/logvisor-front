@@ -27,8 +27,6 @@ type InfoDataProps = {
 	subTitle: string
 	iconTitle: string
 	mainCardTitle: string
-	mainCardStats: string
-	mainCardText: string
 	subCardTitle: string
 	subCardStats: string
 	subCardText: string
@@ -41,8 +39,6 @@ export default function DashboardPage() {
 			'Просмотр всех основных логов с серверов, включая ошибки, предупреждения, события сервисов и последние срабатывания алертов.',
 		iconTitle: 'Dashboard',
 		mainCardTitle: 'System health',
-		mainCardStats: '92%',
-		mainCardText: 'Стабильное состояние',
 		subCardTitle: 'Updated',
 		subCardStats: '12:30',
 		subCardText: 'Последнее время обновления.'
