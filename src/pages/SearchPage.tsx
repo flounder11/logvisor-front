@@ -3,7 +3,7 @@ import Filters from '@/components/Filters'
 import LogInfo from '@/components/LogInfo'
 import PageInfo from '@/components/PageInfo'
 import { apiClient } from '@/shared/api/api-client'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 type InfoDataProps = {
 	title: string
@@ -22,7 +22,7 @@ type LogLevel = 'ERROR' | 'WARN' | 'INFO'
 type SearchResuiltProps = {
 	id: string
 	level: LogLevel
-	time: string
+	timestamp: string
 	host: string
 	service: string
 	message: string
@@ -33,6 +33,15 @@ export default function SearchPage() {
 	const [search, setSearch] = useState<SearchResuiltProps[]>([])
 	const [loader, setLoader] = useState(false)
 	const [error, setError] = useState(null)
+
+	const [query, setQuery] = useState('')
+	const [selectedHost, setSelectedHost] = useState('all-hosts')
+	const [selectedService, setSelectedService] = useState('all-services')
+	const [selectedLevel, setSelectedLevel] = useState('all-levels')
+
+	const [selectedLog, setSelectedLog] = useState<SearchResuiltProps | null>(
+		null
+	)
 
 	const infoData: InfoDataProps = {
 		title: 'Поиск по логам с быстрым просмотром записи',
@@ -57,6 +66,10 @@ export default function SearchPage() {
 					path: 'logs/search'
 				})
 				setSearch(data.items)
+
+				if (data.items.length > 0) {
+					setSelectedLog(data.items[0])
+				}
 			} catch (err) {
 				if (err instanceof Error) {
 					console.log(err.message)
@@ -69,6 +82,35 @@ export default function SearchPage() {
 		fetchAllSearch()
 	}, [])
 
+	const filteredLogs = useMemo(() => {
+		return search
+			.filter(item => {
+				const matchesQuery =
+					item.message.toLowerCase().includes(query.toLowerCase()) ||
+					item.host.toLowerCase().includes(query.toLowerCase()) ||
+					item.service.toLowerCase().includes(query.toLowerCase())
+
+				const matchesHost =
+					selectedHost === 'all-hosts' || item.host === selectedHost
+
+				const matchesService =
+					selectedService === 'all-services' || item.service === selectedService
+
+				const matchesLevel =
+					selectedLevel === 'all-levels' || item.level === selectedLevel
+
+				return matchesQuery && matchesHost && matchesLevel && matchesService
+			})
+			.sort((a, b) => a.timestamp.localeCompare(b.timestamp))
+	}, [search, query, selectedHost, selectedService, selectedLevel])
+
+	const resetFilters = () => {
+		setQuery('')
+		setSelectedHost('all-hosts')
+		setSelectedLevel('all-levels')
+		setSelectedService('all-services')
+	}
+
 	if (loader) return <div>loader</div>
 	if (error) return <div>error</div>
 
@@ -76,10 +118,25 @@ export default function SearchPage() {
 		<section className="mx-auto mt-8 max-w-7xl space-y-8 px-4 pb-10 sm:px-6">
 			<PageInfo data={infoData} />
 
-			<Filters filterSearch={search} />
+			<Filters
+				filterSearch={search}
+				query={query}
+				onQueryChange={setQuery}
+				selectedHost={selectedHost}
+				onHostChange={setSelectedHost}
+				selectedService={selectedService}
+				onServiceChange={setSelectedService}
+				selectedLevel={selectedLevel}
+				onLevelChange={setSelectedLevel}
+				onReset={resetFilters}
+			/>
 			<div className="grid gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.95fr)]">
-				<AllLogs search={search} />
-				<LogInfo />
+				<AllLogs
+					search={filteredLogs}
+					selectedLog={selectedLog}
+					onSelectedLog={setSelectedLog}
+				/>
+				<LogInfo selectedLog={selectedLog} />
 			</div>
 		</section>
 	)

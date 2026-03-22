@@ -33,7 +33,31 @@ type AllLogsProps = {
 	filterSearch: SearchResultProps[]
 }
 
-export default function Filters({ filterSearch }: AllLogsProps) {
+type FiltersProps = {
+	filterSearch: SearchResultProps[]
+	query: string
+	onQueryChange: (value: string) => void
+	selectedHost: string
+	onHostChange: (value: string) => void
+	selectedService: string
+	onServiceChange: (value: string) => void
+	selectedLevel: string
+	onLevelChange: (value: string) => void
+	onReset: () => void
+}
+
+export default function Filters({
+	filterSearch,
+	query,
+	onQueryChange,
+	selectedHost,
+	onHostChange,
+	selectedService,
+	onServiceChange,
+	selectedLevel,
+	onLevelChange,
+	onReset
+}: FiltersProps) {
 	const uniqueHosts = useMemo(() => {
 		return [...new Set(filterSearch.map(item => item.host))]
 	}, [filterSearch])
@@ -68,11 +92,16 @@ export default function Filters({ filterSearch }: AllLogsProps) {
 						<Input
 							className="h-11 bg-background/80"
 							placeholder="Search in message, trace id, host, service..."
+							value={query}
+							onChange={e => onQueryChange(e.target.value)}
 						/>
 					</Field>
 
 					<Field>
-						<Select defaultValue="all-hosts">
+						<Select
+							value={selectedHost}
+							onValueChange={onHostChange}
+						>
 							<SelectTrigger className="h-11 w-full bg-background/80">
 								<SelectValue placeholder="Host" />
 							</SelectTrigger>
@@ -93,7 +122,10 @@ export default function Filters({ filterSearch }: AllLogsProps) {
 					</Field>
 
 					<Field>
-						<Select defaultValue="all-services">
+						<Select
+							value={selectedService}
+							onValueChange={onServiceChange}
+						>
 							<SelectTrigger className="h-11 w-full bg-background/80">
 								<SelectValue placeholder="Service" />
 							</SelectTrigger>
@@ -114,7 +146,10 @@ export default function Filters({ filterSearch }: AllLogsProps) {
 					</Field>
 
 					<Field>
-						<Select defaultValue="all-levels">
+						<Select
+							value={selectedLevel}
+							onValueChange={onLevelChange}
+						>
 							<SelectTrigger className="h-11 w-full bg-background/80">
 								<SelectValue placeholder="Level" />
 							</SelectTrigger>
@@ -145,6 +180,7 @@ export default function Filters({ filterSearch }: AllLogsProps) {
 						<Button
 							variant="secondary"
 							size="lg"
+							onClick={onReset}
 						>
 							Reset
 						</Button>
