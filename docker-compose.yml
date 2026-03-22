@@ -1,0 +1,11 @@
+services:
+  logvisor-front:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+    container_name: logvisor-front
+    ports:
+      - "8080:80"
+    restart: unless-stopped
