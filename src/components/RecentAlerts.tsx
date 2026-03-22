@@ -45,12 +45,35 @@ type AlertResponse = {
 	createdAt: string
 }
 
-export default function RecentAlerts() {
-	const [alerts, setAlerts] = useState<AlertResponse[]>([])
+type RecentAlertsProps = {
+	data?: AlertResponse[]
+}
+
+function formatAlertDate(value: string) {
+	if (!value) {
+		return 'unknown'
+	}
+
+	const parsed = Date.parse(value)
+
+	if (Number.isNaN(parsed)) {
+		return value
+	}
+
+	return new Date(parsed).toLocaleString()
+}
+
+export default function RecentAlerts({ data }: RecentAlertsProps) {
+	const [alerts, setAlerts] = useState<AlertResponse[]>(data ?? [])
 	const [loader, setLoader] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 
 	useEffect(() => {
+		if (data) {
+			setAlerts(data)
+			return
+		}
+
 		const fetchAlertsHistory = async () => {
 			try {
 				setLoader(true)
@@ -70,7 +93,11 @@ export default function RecentAlerts() {
 		}
 
 		fetchAlertsHistory()
-	}, [])
+	}, [data])
+
+	const errorAlerts = alerts.filter(alert => alert.level === 'ERROR').length
+	const warningAlerts = alerts.filter(alert => alert.level === 'WARN').length
+	const latestAlert = alerts[0] ?? null
 
 	if (loader) return <div>загрузка</div>
 	if (error) return <div>ошибка</div>
@@ -84,7 +111,7 @@ export default function RecentAlerts() {
 					</CardDescription>
 				</div>
 				<div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground">
-					Static placeholder feed
+					{alerts.length} rules loaded
 				</div>
 			</CardHeader>
 
@@ -111,7 +138,7 @@ export default function RecentAlerts() {
 								</p>
 							</div>
 							<p className="shrink-0 text-xs text-muted-foreground">
-								{alert.createdAt}
+								{formatAlertDate(alert.createdAt)}
 							</p>
 						</div>
 					))}
@@ -120,38 +147,39 @@ export default function RecentAlerts() {
 				<div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
 					<div className="rounded-2xl border border-border/60 bg-background/80 p-4">
 						<p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-							Focus area
+							Error rules
 						</p>
 						<p className="mt-2 text-lg font-semibold text-foreground">
-							Section title
+							{errorAlerts}
 						</p>
 						<p className="mt-1 text-sm leading-6 text-muted-foreground">
-							Блок под краткий вывод, incident summary или заметку оператора.
+							Количество alert rules с уровнем `ERROR`.
 						</p>
 					</div>
 
 					<div className="rounded-2xl border border-border/60 bg-background/80 p-4">
 						<p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-							Rule / note
+							Warning rules
 						</p>
 						<p className="mt-2 text-lg font-semibold text-foreground">
-							Section title
+							{warningAlerts}
 						</p>
 						<p className="mt-1 text-sm leading-6 text-muted-foreground">
-							Подходит под выбранное правило, host details или quick action.
+							Количество alert rules с уровнем `WARN`.
 						</p>
 					</div>
 
 					<div className="rounded-2xl border border-border/60 bg-background/80 p-4">
 						<p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-							Next step
+							Latest rule
 						</p>
 						<p className="mt-2 text-lg font-semibold text-foreground">
-							Connect data
+							{latestAlert?.query || 'No alerts'}
 						</p>
 						<p className="mt-1 text-sm leading-6 text-muted-foreground">
-							Когда будешь готов, просто меняй плейсхолдеры на свои данные и
-							компоненты.
+							{latestAlert
+								? latestAlert.name
+								: 'Когда rules появятся, здесь будет последняя активная запись.'}
 						</p>
 					</div>
 				</div>

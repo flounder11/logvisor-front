@@ -2,20 +2,29 @@ import { apiClient } from '@/shared/api/api-client'
 import { useEffect, useState } from 'react'
 import SummaryCard from './SummaryCard'
 
-export default function ListSummary() {
-	const [sumData, setSumData] = useState<SummaryDataType | null>(null)
+export type SummaryDataType = {
+	totalLogs: number
+	errors: number
+	warnings: number
+	hosts: number
+	services: number
+}
+
+type ListSummaryProps = {
+	data?: SummaryDataType | null
+}
+
+export default function ListSummary({ data }: ListSummaryProps) {
+	const [sumData, setSumData] = useState<SummaryDataType | null>(data ?? null)
 	const [loader, setLoader] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 
-	type SummaryDataType = {
-		totalLogs: number
-		errors: number
-		warnings: number
-		hosts: number
-		services: number
-	}
-
 	useEffect(() => {
+		if (data) {
+			setSumData(data)
+			return
+		}
+
 		const fetchSummary = async () => {
 			try {
 				setLoader(true)
@@ -36,7 +45,7 @@ export default function ListSummary() {
 		}
 
 		fetchSummary()
-	}, [])
+	}, [data])
 
 	if (loader) return <div>Загрузка</div>
 	if (error) return <div>Ошибка</div>

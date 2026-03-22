@@ -15,6 +15,8 @@ export default function DistributionCard({
 	title,
 	rows
 }: DistributionCardProps) {
+	const maxCount = Math.max(...rows.map(row => row.count), 1)
+
 	return (
 		<Card className="border border-border/60 bg-card/95 shadow-sm">
 			<CardHeader>
@@ -35,7 +37,7 @@ export default function DistributionCard({
 						<div className="h-2 rounded-full bg-muted">
 							<div
 								className="h-2 rounded-full bg-foreground/20"
-								style={{ width: `${100 - index * 18}%` }}
+								style={{ width: `${Math.max((row.count / maxCount) * 100, 8)}%` }}
 							/>
 						</div>
 					</div>
